@@ -86,7 +86,7 @@ module.exports = function(sequelize, options){
             documentId: instance.get("id"),
             revision: instance.get(options.revisionAttribute),
             // Hacky, but necessary to get immutable current representation
-            document: JSON.parse(JSON.stringify(currentVersion)),
+            document: JSON.stringify(currentVersion),
             // Get user from instance.context, hacky workaround, any better idea?
             userId: options.userModel && user ? user.id : null
          });
