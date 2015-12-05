@@ -132,9 +132,9 @@ module.exports = function(sequelize, options){
                type: Sequelize.TEXT,
                allowNull: false
             },
-            "createdAt": DataTypes.DATE,
-            "updatedAt": DataTypes.DATE,
-            "deletedAt": DataTypes.DATE
+            "createdAt": Sequelize.DATE,
+            "updatedAt": Sequelize.DATE,
+            "deletedAt": Sequelize.DATE
          };
          if(options.UUID){
             attributes.id = {
@@ -160,9 +160,9 @@ module.exports = function(sequelize, options){
                type: Sequelize.TEXT,
                allowNull: false
             },
-            "createdAt": DataTypes.DATE,
-            "updatedAt": DataTypes.DATE,
-            "deletedAt": DataTypes.DATE
+            "createdAt": Sequelize.DATE,
+            "updatedAt": Sequelize.DATE,
+            "deletedAt": Sequelize.DATE
          };
          if(options.UUID){
             attributes.id = {
