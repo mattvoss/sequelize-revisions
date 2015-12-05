@@ -16,10 +16,10 @@ module.exports = function(sequelize, options){
       options.revisionAttribute = "revision";
    }
    if(!options.revisionModel){
-      options.revisionModel = "revision";
+      options.revisionModel = "revisions";
    }
    if(!options.revisionChangeModel){
-      options.revisionChangeModel = "revision-change";
+      options.revisionChangeModel = "revisionChanges";
    }
    if(options.UUID === undefined){
       options.UUID = false;
@@ -69,8 +69,8 @@ module.exports = function(sequelize, options){
    // After create/update store diffs
    var after = function(instance, opt){
       if(instance.context && instance.context.diffs && instance.context.diffs.length > 0){
-         var Revision = sequelize.model(options.revisionModel);
-         var RevisionChange = sequelize.model(options.revisionChangeModel);
+         var Revisions = sequelize.model(options.revisionModel);
+         var RevisionChanges = sequelize.model(options.revisionChangeModel);
          var diffs = instance.context.diffs;
          var previousVersion = instance._previousDataValues;
          var currentVersion = instance.dataValues;
@@ -81,7 +81,7 @@ module.exports = function(sequelize, options){
          }
 
          // Build revision
-         var revision = Revision.build({
+         var revision = Revisions.build({
             model: opt.model.name,
             documentId: instance.get("id"),
             revision: instance.get(options.revisionAttribute),
@@ -97,7 +97,7 @@ module.exports = function(sequelize, options){
             diffs.forEach(function(difference){
                var o = convertToString(difference.item ? difference.item.lhs : difference.lhs);
                var n = convertToString(difference.item ? difference.item.rhs : difference.rhs);
-               var d = RevisionChange.build({
+               var d = RevisionChanges.build({
                   path: difference.path[0],
                   document: difference,
                   //revisionId: data.id,
@@ -116,22 +116,25 @@ module.exports = function(sequelize, options){
       // Return defineModels()
       defineModels: function(){
          var attributes = {
-            model: {
+            "model": {
                type: Sequelize.TEXT,
                allowNull: false
             },
-            documentId: {
+            "documentId": {
                type: Sequelize.UUID,
                allowNull: false
             },
-            revision: {
+            "revision": {
                type: Sequelize.INTEGER,
                allowNull: false
             },
-            document: {
-               type: Sequelize.JSON,
+            "document": {
+               type: Sequelize.TEXT,
                allowNull: false
-            }
+            },
+            "createdAt": DataTypes.DATE,
+            "updatedAt": DataTypes.DATE,
+            "deletedAt": DataTypes.DATE
          };
          if(options.UUID){
             attributes.id = {
@@ -142,21 +145,24 @@ module.exports = function(sequelize, options){
             attributes.documentId.type = Sequelize.UUID;
          }
          // Revision model
-         var Revision = sequelize.define(options.revisionModel, attributes);
+         var Revisions = sequelize.define(options.revisionModel, attributes);
 
          attributes = {
-            path: {
+            "path": {
                type: Sequelize.TEXT,
                allowNull: false
             },
-            document: {
-               type: Sequelize.JSON,
+            "document": {
+               type: Sequelize.TEXT,
                allowNull: false
             },
-            diff: {
-               type: Sequelize.JSON,
+            "diff": {
+               type: Sequelize.TEXT,
                allowNull: false
-            }
+            },
+            "createdAt": DataTypes.DATE,
+            "updatedAt": DataTypes.DATE,
+            "deletedAt": DataTypes.DATE
          };
          if(options.UUID){
             attributes.id = {
@@ -167,22 +173,22 @@ module.exports = function(sequelize, options){
          }
 
          // RevisionChange model
-         var RevisionChange = sequelize.define(options.revisionChangeModel, attributes);
+         var RevisionChanges = sequelize.define(options.revisionChangeModel, attributes);
          // Set associations
-         Revision.hasMany(RevisionChange, {
+         Revisions.hasMany(RevisionChanges, {
             foreignKey: "revisionId",
             constraints: true,
             as: "changes"
          });
          // Associate with user if necessary
          if (options.userModel) {
-            Revision.belongsTo(sequelize.model(options.userModel), {
+            Revisions.belongsTo(sequelize.model(options.userModel), {
                foreignKey: "userId",
                constraints: true,
                as: "user"
             });
          }
-         return Revision;
+         return Revisions;
       }
    }
 }
