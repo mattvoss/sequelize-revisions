@@ -162,7 +162,7 @@ module.exports = function(sequelize, options){
             },
             "revisionId": {
                type: Sequelize.INTEGER,
-            }
+            },
             "createdAt": Sequelize.DATE,
             "updatedAt": Sequelize.DATE,
             "deletedAt": Sequelize.DATE
