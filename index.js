@@ -99,9 +99,9 @@ module.exports = function(sequelize, options){
                var n = convertToString(difference.item ? difference.item.rhs : difference.rhs);
                var d = RevisionChanges.build({
                   path: difference.path[0],
-                  document: difference,
+                  document: JSON.stringify(difference),
                   //revisionId: data.id,
-                  diff: o || n ? jsdiff.diffChars(o, n) : []
+                  diff: o || n ? JSON.stringify(jsdiff.diffChars(o, n)) : ''
                });
                d.save().then(function(d){
                   // Add diff to revision
