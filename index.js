@@ -160,6 +160,9 @@ module.exports = function(sequelize, options){
                type: Sequelize.TEXT,
                allowNull: false
             },
+            "revisionId": {
+               type: Sequelize.INTEGER,
+            }
             "createdAt": Sequelize.DATE,
             "updatedAt": Sequelize.DATE,
             "deletedAt": Sequelize.DATE
