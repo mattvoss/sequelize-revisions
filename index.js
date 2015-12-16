@@ -81,7 +81,7 @@ module.exports = function(sequelize, options){
          }
 
          // Build revision
-         var revision = Revisions.build({
+          var revision = Revisions.build({
             model: opt.model.name,
             documentId: instance.get("id"),
             revision: instance.get(options.revisionAttribute),
@@ -89,12 +89,13 @@ module.exports = function(sequelize, options){
             document: JSON.stringify(currentVersion),
             // Get user from instance.context, hacky workaround, any better idea?
             userId: options.userModel && user ? user.id : null
-         });
-
+          });
          // Save revision
-         revision.save().then(function(revision){
+         revision.save().then(
+           function(revision){
             // Loop diffs and create a revision-diff for each
-            diffs.forEach(function(difference){
+            diffs.forEach(
+              function(difference){
                var o = convertToString(difference.item ? difference.item.lhs : difference.lhs);
                var n = convertToString(difference.item ? difference.item.rhs : difference.rhs);
                var d = RevisionChanges.build({
@@ -103,12 +104,19 @@ module.exports = function(sequelize, options){
                   //revisionId: data.id,
                   diff: o || n ? JSON.stringify(jsdiff.diffChars(o, n)) : ''
                });
-               d.save().then(function(d){
+               d.save().then(
+                function(d){
                   // Add diff to revision
                   revision.addChange(d);
-               }).catch(log);
-            });
-         }).catch(log);
+                  return null;
+                }
+               ).catch(log);
+              }
+            );
+          }
+         ).catch(
+           log
+         );
       }
    };
 
