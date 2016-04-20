@@ -128,7 +128,7 @@ module.exports = function(sequelize, options){
       defineModels: function(){
          var attributes = {
            "id": {
-              type: DataTypes.BLOB,
+              type: Sequelize.BLOB,
               primaryKey: true,
               get: function()  {
                 return this.getDataValue('id').toString('hex');
@@ -142,7 +142,7 @@ module.exports = function(sequelize, options){
                allowNull: false
             },
             "documentId": {
-                type: DataTypes.BLOB,
+                type: Sequelize.BLOB,
                 primaryKey: true,
                 get: function()  {
                   return this.getDataValue('id').toString('hex');
@@ -176,7 +176,7 @@ module.exports = function(sequelize, options){
 
          attributes = {
             "id": {
-              type: DataTypes.BLOB,
+              type: Sequelize.BLOB,
               primaryKey: true,
               get: function()  {
                 return this.getDataValue('id').toString('hex');
@@ -198,7 +198,7 @@ module.exports = function(sequelize, options){
                allowNull: false
             },
             "revisionId": {
-              type: DataTypes.BLOB,
+              type: Sequelize.BLOB,
               primaryKey: true,
               get: function()  {
                 return this.getDataValue('id').toString('hex');
