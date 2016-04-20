@@ -2,7 +2,7 @@
   "name": "sequelize-revisions",
   "description": "Enables document revisions and the exact changes of each revision",
   "private": false,
-  "version": "0.0.8",
+  "version": "0.1.0",
   "main": "index.js",
   "author": {
     "name": "Benjamin Kniffler",
@@ -25,7 +25,8 @@
   "dependencies": {
     "deep-diff": "^0.3.2",
     "diff": "^2.1.1",
-    "lodash": "^3.10.0"
+    "lodash": "^3.10.0",
+    "innodb-optimized-uuid": "^1.1.1",
   },
   "devDependencies": {},
   "peerDependencies": {

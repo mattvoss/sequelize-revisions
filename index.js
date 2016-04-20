@@ -2,6 +2,7 @@ var Sequelize = require("sequelize");
 var diff = require("deep-diff").diff;
 var jsdiff = require("diff");
 var _ = require('lodash');
+var iouuid = require("innodb-optimized-uuid");
 
 module.exports = function(sequelize, options){
    if(!options){
@@ -82,6 +83,7 @@ module.exports = function(sequelize, options){
 
          // Build revision
           var revision = Revisions.build({
+            id: iouuid.generate().toLowerCase(),
             model: opt.model.name,
             documentId: instance.get("id"),
             revision: instance.get(options.revisionAttribute),
@@ -99,6 +101,7 @@ module.exports = function(sequelize, options){
                var o = convertToString(difference.item ? difference.item.lhs : difference.lhs);
                var n = convertToString(difference.item ? difference.item.rhs : difference.rhs);
                var d = RevisionChanges.build({
+                  id: iouuid.generate().toLowerCase(),
                   path: difference.path[0],
                   document: JSON.stringify(difference),
                   //revisionId: data.id,
@@ -124,13 +127,29 @@ module.exports = function(sequelize, options){
       // Return defineModels()
       defineModels: function(){
          var attributes = {
+           "id": {
+              type: DataTypes.BLOB,
+              primaryKey: true,
+              get: function()  {
+                return this.getDataValue('id').toString('hex');
+              },
+              set: function(val) {
+                this.setDataValue('id', new Buffer(val, "hex"));
+              }
+            },
             "model": {
                type: Sequelize.TEXT,
                allowNull: false
             },
             "documentId": {
-               type: Sequelize.UUID,
-               allowNull: false
+                type: DataTypes.BLOB,
+                primaryKey: true,
+                get: function()  {
+                  return this.getDataValue('id').toString('hex');
+                },
+                set: function(val) {
+                  this.setDataValue('id', new Buffer(val, "hex"));
+                }
             },
             "revision": {
                type: Sequelize.INTEGER,
@@ -156,6 +175,16 @@ module.exports = function(sequelize, options){
          var Revisions = sequelize.define(options.revisionModel, attributes);
 
          attributes = {
+            "id": {
+              type: DataTypes.BLOB,
+              primaryKey: true,
+              get: function()  {
+                return this.getDataValue('id').toString('hex');
+              },
+              set: function(val) {
+                this.setDataValue('id', new Buffer(val, "hex"));
+              }
+            },
             "path": {
                type: Sequelize.TEXT,
                allowNull: false
@@ -169,7 +198,14 @@ module.exports = function(sequelize, options){
                allowNull: false
             },
             "revisionId": {
-               type: Sequelize.INTEGER,
+              type: DataTypes.BLOB,
+              primaryKey: true,
+              get: function()  {
+                return this.getDataValue('id').toString('hex');
+              },
+              set: function(val) {
+                this.setDataValue('id', new Buffer(val, "hex"));
+              }
             },
             "createdAt": Sequelize.DATE,
             "updatedAt": Sequelize.DATE,
