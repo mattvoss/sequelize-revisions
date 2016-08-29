@@ -41,24 +41,29 @@ module.exports = function(sequelize, options){
 
          this.addHook("afterCreate", after);
          this.addHook("afterUpdate", after);
+         this.addHook("afterDestroy", after);
+         //this.addHook("afterBulkDestroy", after);
          this.addHook("beforeCreate", before);
          this.addHook("beforeUpdate", before);
+         //this.addHook("beforeBulkDestroy", before);
+         this.addHook("beforeDestroy", before);
          return this;
       }
    });
 
    // Before create/update augment revision
    var before = function(instance, opt){
-      var previousVersion = instance._previousDataValues;
-      var currentVersion = instance.dataValues;
+      console.log("before", opt);
+      var previousVersion = (opt.type === 'BULKDELETE') ? {deletedAt: null} : instance._previousDataValues;
+      var currentVersion = (opt.type === 'BULKDELETE') ? {deletedAt: new Date()} : instance.dataValues;
 
       // Disallow change of revision
       instance.set(options.revisionAttribute, instance._previousDataValues[options.revisionAttribute]);
 
       // Get diffs
       var diffs = getDifferences(previousVersion, currentVersion, options.exclude);
-
-      if(diffs && diffs.length > 0){
+      console.log("before:diffs", diffs);
+      if((diffs && diffs.length > 0) || opt.type === 'BULKDELETE' ){
          instance.set(options.revisionAttribute, (instance.get(options.revisionAttribute) || 0) + 1);
          if(!instance.context){
             instance.context = {};
@@ -69,13 +74,16 @@ module.exports = function(sequelize, options){
 
    // After create/update store diffs
    var after = function(instance, opt){
+      console.log("after", opt);
+      console.log("diffs", instance.context.diffs);
+      console.log("diffs", instance.context.diffs.length);
       if(instance.context && instance.context.diffs && instance.context.diffs.length > 0){
          var Revisions = sequelize.model(options.revisionModel);
          var RevisionChanges = sequelize.model(options.revisionChangeModel);
          var diffs = instance.context.diffs;
          var previousVersion = instance._previousDataValues;
          var currentVersion = instance.dataValues;
-
+         var name = (typeof opt.name === "object") ? opt.name.plural : opt.name;
          var user = opt.user;
          if(!user && instance.context && instance.context.user){
             user = instance.context.user;
@@ -84,7 +92,7 @@ module.exports = function(sequelize, options){
          // Build revision
           var revision = Revisions.build({
             id: iouuid.generate().toLowerCase(),
-            model: opt.model.name,
+            model: name,
             documentId: instance.get("id"),
             revision: instance.get(options.revisionAttribute),
             // Hacky, but necessary to get immutable current representation
@@ -104,7 +112,7 @@ module.exports = function(sequelize, options){
                   id: iouuid.generate().toLowerCase(),
                   path: difference.path[0],
                   document: JSON.stringify(difference),
-                  //revisionId: data.id,
+                  revisionId: revision.id,
                   diff: o || n ? JSON.stringify(jsdiff.diffChars(o, n)) : ''
                });
                d.save().then(
@@ -131,7 +139,11 @@ module.exports = function(sequelize, options){
               type: Sequelize.BLOB,
               primaryKey: true,
               get: function()  {
-                return this.getDataValue('id').toString('hex');
+                if (this.getDataValue('id')) {
+                  return this.getDataValue('id').toString('hex');
+                } else {
+                  return null;
+                }
               },
               set: function(val) {
                 this.setDataValue('id', new Buffer(val, "hex"));
@@ -145,10 +157,10 @@ module.exports = function(sequelize, options){
                 type: Sequelize.BLOB,
                 primaryKey: true,
                 get: function()  {
-                  return this.getDataValue('id').toString('hex');
+                  return this.getDataValue('documentId').toString('hex');
                 },
                 set: function(val) {
-                  this.setDataValue('id', new Buffer(val, "hex"));
+                  this.setDataValue('documentId', new Buffer(val, "hex"));
                 }
             },
             "revision": {
@@ -179,7 +191,11 @@ module.exports = function(sequelize, options){
               type: Sequelize.BLOB,
               primaryKey: true,
               get: function()  {
-                return this.getDataValue('id').toString('hex');
+                if (this.getDataValue('id')) {
+                  return this.getDataValue('id').toString('hex');
+                } else {
+                  return null;
+                }
               },
               set: function(val) {
                 this.setDataValue('id', new Buffer(val, "hex"));
@@ -201,10 +217,10 @@ module.exports = function(sequelize, options){
               type: Sequelize.BLOB,
               primaryKey: true,
               get: function()  {
-                return this.getDataValue('id').toString('hex');
+                return this.getDataValue('revisionId').toString('hex');
               },
               set: function(val) {
-                this.setDataValue('id', new Buffer(val, "hex"));
+                this.setDataValue('revisionId', new Buffer(val, "hex"));
               }
             },
             "createdAt": Sequelize.DATE,
