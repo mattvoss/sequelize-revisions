@@ -83,7 +83,7 @@ module.exports = function(sequelize, options){
          var diffs = instance.context.diffs;
          var previousVersion = instance._previousDataValues;
          var currentVersion = instance.dataValues;
-         var name = (typeof opt.$modelOptions.name === "object") ? opt.$modelOptions.name.plural : opt.$modelOptions.name;
+         var name = (typeof instance.$modelOptions.name === "object") ? instance.$modelOptions.name.plural : instance.$modelOptions.name;
          var user = opt.user;
          if(!user && instance.context && instance.context.user){
             user = instance.context.user;
